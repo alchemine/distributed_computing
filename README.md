@@ -1,2 +1,1 @@
-# updated_gitignore
-Python 기반 .gitignore에 자주 추가하는 파일, 확장자를 추가
+# 분산 처리를 위한 example code
