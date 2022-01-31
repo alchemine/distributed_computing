@@ -1,0 +1,61 @@
+from common import *
+
+parser = ArgumentParser(description='Select generated cluster')
+parser.add_argument('--scheduler', help='Scheduler server', default='server1')
+parser.add_argument('--ini', help='Server config ini file', default='server_config.ini')
+parser.add_argument('--result_dir', help='Directory path for saved result', default='result')
+
+
+if __name__ == '__main__':
+    ## 1. Parse arguments
+    args = parser.parse_args()
+
+
+    ## 2. Load server config
+    configs = ini2dict(args.ini)
+
+
+    ## 3. Get client
+    config_scheduler = configs[args.scheduler]
+    client = Client(f"{config_scheduler['host']}:{config_scheduler['scheduler_port']}")
+    print(client)
+
+
+    ## 4. Run tasks
+    ## 4.1 Define task
+    result_dir_path = abspath(join(dirname(__file__), args.result_dir))
+    if isdir(result_dir_path):  rmtree(result_dir_path)
+    makedirs(result_dir_path)
+    def task(param):
+        id, transfer_info = param
+        config_scheduler  = transfer_info['config_scheduler']
+
+        ## 1. Do something
+        sleep(1)
+
+        ## 2. Save result with file
+        result = dict(id=id)
+        makedirs(transfer_info['result_dir_path'], exist_ok=True)
+        src_file_path = abspath(join(transfer_info['result_dir_path'], f'{id}.joblib'))
+        dst_file_path = abspath(join(transfer_info['result_dir_path'], f'[{uname()[1]}]{id}.joblib'))
+        joblib.dump(result, src_file_path)
+
+        ## 3. Transfer
+        os.system(f"scp -P {config_scheduler['ssh_port']} {src_file_path} {config_scheduler['username']}@{config_scheduler['host']}:{dst_file_path}")
+        os.remove(src_file_path)
+    ids           = range(10)
+    transfer_info = dict(result_dir_path=result_dir_path, config_scheduler=config_scheduler)
+    params        = [(id, transfer_info) for id in ids]
+
+    ## 4.2 Run tasks
+    s = time()
+    futures = client.map(task, params)
+
+
+    ## 5. Print result
+    list(as_completed(futures))  # wait until all tasks are completed
+    results = [joblib.load(join(result_dir_path, name)) for name in listdir(result_dir_path)]
+    print(f"* Elapsed time: {time() - s:.2f}s")
+    print("Results")
+    for name, result in zip(listdir(result_dir_path), results):
+        print(f"{name}: {result}")
