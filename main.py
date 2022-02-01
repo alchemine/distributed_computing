@@ -25,14 +25,13 @@ if __name__ == '__main__':
     def task(id):
         ## 1. Do something
         sleep(1)
-
-        ## 2. Return result
         return dict(id=id)
     params = range(10)
 
     ## 4.2 Run tasks
     s = time()
-    futures = client.map(task, params, key=[f"task-{id}" for id in params])
+    futures = client.map(task, params)
+    print(futures)
 
 
     ## 5. Print result

@@ -22,35 +22,37 @@ if __name__ == '__main__':
 
 
     ## 4. Run tasks
-    ## 4.1 Define task
-    result_dir_path = abspath(join(dirname(__file__), args.result_dir))
-    if isdir(result_dir_path):  rmtree(result_dir_path)
-    makedirs(result_dir_path)
+    ### 4.1 Define task
     def task(param):
         id, transfer_info = param
-        config_scheduler  = transfer_info['config_scheduler']
 
         ## 1. Do something
         sleep(1)
+        result = dict(id=id)
 
         ## 2. Save result with file
-        result = dict(id=id)
         makedirs(transfer_info['result_dir_path'], exist_ok=True)
         src_file_path = abspath(join(transfer_info['result_dir_path'], f'{id}.joblib'))
         dst_file_path = abspath(join(transfer_info['result_dir_path'], f'[{uname()[1]}]{id}.joblib'))
         joblib.dump(result, src_file_path)
 
         ## 3. Transfer
+        config_scheduler = transfer_info['config_scheduler']
         os.system(f"scp -P {config_scheduler['ssh_port']} {src_file_path} {config_scheduler['username']}@{config_scheduler['host']}:{dst_file_path}")
         os.remove(src_file_path)
+
+    ### 4.2 Set parameters
+    result_dir_path = abspath(args.result_dir)
+    if isdir(result_dir_path):  rmtree(result_dir_path)
+    makedirs(result_dir_path)
     ids           = range(10)
     transfer_info = dict(result_dir_path=result_dir_path, config_scheduler=config_scheduler)
     params        = [(id, transfer_info) for id in ids]
 
-    ## 4.2 Run tasks
+    ### 4.3 Run tasks
     s = time()
     futures = client.map(task, params)
-
+    print(futures)
 
     ## 5. Print result
     list(as_completed(futures))  # wait until all tasks are completed
