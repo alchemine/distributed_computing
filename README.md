@@ -30,8 +30,8 @@ distributed_computing
 ├── cluster_stop.py
 ├── common.py
 ├── example.py
-├── example_connection_error.py
-├── example_connection_error.ipynb
+├── example_connection_error_handled.py
+├── example_connection_error_handled.ipynb
 └── server_config.ini (private)
 ```
 
@@ -85,6 +85,6 @@ Utility function 등이 있는 공용 module
 ### 3.6 `example.py`
 분산 처리 예제 python script
 
-### 3.7 `example_connection_error.py`, `example_connection_error.ipynb`
+### 3.7 `example_connection_error_handled.py`, `example_connection_error_handled.ipynb`
 분산 처리 예제 python script (connection error가 발생하는 경우 사용)
 - worker port 접근이 제한되어 있는 경우, `client.gather()`이 사용불가하기 때문에 파일 전송 등을 통해 worker에서 실행된 결과를 받아와야 한다.
