@@ -2,16 +2,20 @@
 
 # 1. Usage
 ```bash
-## 1. Cluster 생성
+## 1. Server 설정(3.1 참고)
+server_config.ini 생성
+
+
+## 2. Cluster 생성
 $ python cluster_start.py
 
 
-## 2. 작업 수행
+## 3. 작업 수행
 $ python example.py
 $ python example_connection_error_handled.py  # client.gather() error is handled
 
 
-## 3. Cluster 해제
+## 4. Cluster 해제
 $ python cluster_stop.py 
 ```
 
