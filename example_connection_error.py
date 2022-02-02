@@ -26,17 +26,23 @@ if __name__ == '__main__':
     def task(param):
         id, transfer_info = param
 
-        ## 1. Do something
+        ## 1. Append entry path to sys.path (current working directory is reset to ~/)
+        entry_path = dirname(__file__)
+        sys.path.append(entry_path)
+
+        ## 2. Do something
+        from common import ini2dict
+        ini2dict('server_config.ini')
         sleep(1)
         result = dict(id=id)
 
-        ## 2. Save result with file
+        ## 3. Save result with file
         makedirs(transfer_info['result_dir_path'], exist_ok=True)
         src_file_path = abspath(join(transfer_info['result_dir_path'], f'{id}.joblib'))
         dst_file_path = abspath(join(transfer_info['result_dir_path'], f'[{uname()[1]}]{id}.joblib'))
         joblib.dump(result, src_file_path)
 
-        ## 3. Transfer
+        ## 4. Transfer
         config_scheduler = transfer_info['config_scheduler']
         os.system(f"scp -P {config_scheduler['ssh_port']} {src_file_path} {config_scheduler['username']}@{config_scheduler['host']}:{dst_file_path}")
         os.remove(src_file_path)
@@ -52,12 +58,13 @@ if __name__ == '__main__':
     ### 4.3 Run tasks
     s = time()
     futures = client.map(task, params)
-    print(futures)
+    print("- Futures:", [future.status for future in futures])
+
 
     ## 5. Print result
-    list(as_completed(futures))  # wait until all tasks are completed
+    tasks = list(as_completed(futures))  # wait until all tasks are completed
     results = [joblib.load(join(result_dir_path, name)) for name in listdir(result_dir_path)]
     print(f"* Elapsed time: {time() - s:.2f}s")
-    print("Results")
+    print("- Results:", [task.status for task in tasks])
     for name, result in zip(listdir(result_dir_path), results):
         print(f"{name}: {result}")

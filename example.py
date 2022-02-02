@@ -24,6 +24,7 @@ if __name__ == '__main__':
     ## 4.1 Define task
     def task(id):
         ## 1. Do something
+        ini2dict('server_config.ini')
         sleep(1)
         return dict(id=id)
     params = range(10)
@@ -31,12 +32,12 @@ if __name__ == '__main__':
     ## 4.2 Run tasks
     s = time()
     futures = client.map(task, params)
-    print(futures)
+    print("- Futures:", [future.status for future in futures])
 
 
     ## 5. Print result
     results = client.gather(futures)
-    print(f"Elapsed time: {time() - s:.2f}s")
-    print("Results")
+    print(f"* Elapsed time: {time() - s:.2f}s")
+    print("- Results:", [future.status for future in futures])
     for result in results:
         print(result)
